@@ -29,7 +29,10 @@ jobs:
             bison \
             libelf-dev \
             curl \
-            device-tree-compiler # dtc alternative
+            device-tree-compiler \
+            clang \
+            llvm \
+            lld
 
       - name: Download and Install Clang
         run: |
@@ -38,7 +41,13 @@ jobs:
           mkdir -p clang
           curl -L "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/${CLANG_VERSION}.tar.xz" \
             -o clang.tar.xz
-          tar -xf clang.tar.xz -C clang
+          if [ $? -eq 0 ]; then
+            echo "Clang downloaded successfully!"
+          else
+            echo "Error downloading Clang!"
+            exit 1
+          fi
+          tar -xf clang.tar.xz -C clang || { echo "Tar extraction failed"; exit 1; }
           export PATH="$PWD/clang/bin:$PATH"
 
       - name: Set Kernel Config
