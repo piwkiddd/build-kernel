@@ -36,6 +36,8 @@ jobs:
       - name: Set Kernel Config
         run: |
           cd kernel
+          export ARCH=arm64
+          export   CROSS_COMPILE=aarch64-linux-gnu-
           make O=out rosemary_defconfig
 
       - name: Build Kernel
