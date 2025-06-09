@@ -18,7 +18,6 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # Update apt and install dependencies
           sudo apt-get update
           sudo apt-get install -y \
             bc \
@@ -34,41 +33,18 @@ jobs:
             llvm \
             lld
 
-      - name: Download and Install Clang
-        run: |
-          # Download the latest Clang version (using LLVM prebuilt release)
-          CLANG_VERSION=clang+llvm-16.0.0-x86_64-linux-gnu
-          mkdir -p clang
-          curl -L "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/${CLANG_VERSION}.tar.xz" \
-            -o clang.tar.xz
-          if [ $? -eq 0 ]; then
-            echo "Clang downloaded successfully!"
-          else
-            echo "Error downloading Clang!"
-            exit 1
-          fi
-          tar -xf clang.tar.xz -C clang || { echo "Tar extraction failed"; exit 1; }
-          export PATH="$PWD/clang/bin:$PATH"
-
       - name: Set Kernel Config
         run: |
           cd kernel
-          make rosemary_defconfig
+          make O=out rosemary_defconfig
 
       - name: Build Kernel
         run: |
           cd kernel
           export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-  # Set toolchain for ARM64 cross-compilation
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export PATH=/usr/lib/llvm-18/bin:$PATH
           make -j$(nproc) O=out CC=clang \
-            LLVM=1 \
-            LLVM_IAS=1 \
-            LD=ld.lld \
-            AR=llvm-ar \
-            NM=llvm-nm \
-            OBJCOPY=llvm-objcopy \
-            OBJDUMP=llvm-objdump \
-            STRIP=llvm-strip \
             out/arch/arm64/boot/Image.gz-dtb
 
       - name: Upload Artifact
