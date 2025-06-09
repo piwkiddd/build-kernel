@@ -29,15 +29,23 @@ jobs:
             libelf-dev \
             curl \
             device-tree-compiler \
+            git \
+            python3 \
+            python3-pip \
+            unzip \
+            wget \
+            ccache \
             clang \
-            llvm \
             lld \
-            gcc-aarch64-linux-gnu
+            llvm \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabi
 
       - name: Set Kernel Config
         run: |
           cd kernel
           export ARCH=arm64
+          export SUBARCH=arm64
           make O=out rosemary_defconfig
 
       - name: Build Kernel with Clang
@@ -45,17 +53,20 @@ jobs:
           cd kernel
           export ARCH=arm64
           export SUBARCH=arm64
+          export KBUILD_BUILD_HOST=github
+          export KBUILD_BUILD_USER=piwkiddd
           export PATH=/usr/lib/llvm-18/bin:$PATH
+
           make -j$(nproc) O=out \
             CC=clang \
-            LLVM=1 \
-            LLVM_IAS=1 \
             LD=ld.lld \
-            AR=llvm-ar \
             NM=llvm-nm \
+            AR=llvm-ar \
             OBJCOPY=llvm-objcopy \
             OBJDUMP=llvm-objdump \
-            STRIP=llvm-strip
+            STRIP=llvm-strip \
+            LLVM=1 \
+            LLVM_IAS=1
 
       - name: Upload Image.gz-dtb
         uses: actions/upload-artifact@v4
