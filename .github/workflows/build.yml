@@ -1,1 +1,60 @@
+name: Build Kernel Rosemary (ramabondanp)
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Kernel (ramabondanp)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v3
+        with:
+          repository: ramabondanp/kernel_xiaomi_rosemary
+          path: kernel
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential libssl-dev libncurses5-dev flex bison libelf-dev dtc curl
+
+      - name: Download Clang
+        run: |
+          CLANG_VERSION=clang-r450784f
+          mkdir -p clang
+          curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/${CLANG_VERSION}/+/refs/heads/master?format=zip" \
+            -o clang.zip
+          unzip clang.zip -d clang
+          export PATH="$PWD/clang/bin:$PATH"
+
+      - name: Set Kernel Config
+        run: |
+          cd kernel
+          make rosemary_defconfig
+
+      - name: Build Kernel
+        run: |
+          cd kernel
+          export ARCH=arm64
+          export CROSS_COMPILE=""
+          make -j$(nproc) O=out CC=clang \
+            LLVM=1 \
+            LLVM_IAS=1 \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip \
+            out/arch/arm64/boot/Image.gz-dtb
+
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Image.gz-dtb
+          path: kernel/out/arch/arm64/boot/Image.gz-dtb
+          
