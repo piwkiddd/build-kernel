@@ -35,6 +35,7 @@ jobs:
             unzip \
             wget \
             ccache \
+            clang-13 \
             clang \
             lld \
             llvm \
@@ -55,10 +56,10 @@ jobs:
           export SUBARCH=arm64
           export KBUILD_BUILD_HOST=github
           export KBUILD_BUILD_USER=piwkiddd
-          export PATH=/usr/lib/llvm-18/bin:$PATH
+          export PATH=/usr/lib/llvm-13/bin:$PATH  # Menambahkan clang-13 ke PATH
 
           make -j$(nproc) O=out \
-            CC=clang \
+            CC=clang-13 \  # Pastikan menggunakan clang-13
             LD=ld.lld \
             NM=llvm-nm \
             AR=llvm-ar \
