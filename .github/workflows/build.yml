@@ -29,15 +29,16 @@ jobs:
             bison \
             libelf-dev \
             curl \
-            device-tree-compiler # Changed to 'device-tree-compiler' (dtc alternative) 
+            device-tree-compiler # dtc alternative
 
-      - name: Download Clang
+      - name: Download and Install Clang
         run: |
-          CLANG_VERSION=clang-r450784f
+          # Download the latest Clang version (using LLVM prebuilt release)
+          CLANG_VERSION=clang+llvm-16.0.0-x86_64-linux-gnu
           mkdir -p clang
-          curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/${CLANG_VERSION}/+/refs/heads/master?format=zip" \
-            -o clang.zip
-          unzip clang.zip -d clang
+          curl -L "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/${CLANG_VERSION}.tar.xz" \
+            -o clang.tar.xz
+          tar -xf clang.tar.xz -C clang
           export PATH="$PWD/clang/bin:$PATH"
 
       - name: Set Kernel Config
