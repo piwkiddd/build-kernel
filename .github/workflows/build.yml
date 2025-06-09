@@ -18,8 +18,18 @@ jobs:
 
       - name: Install build dependencies
         run: |
+          # Update apt and install dependencies
           sudo apt-get update
-          sudo apt-get install -y bc build-essential libssl-dev libncurses5-dev flex bison libelf-dev dtc curl
+          sudo apt-get install -y \
+            bc \
+            build-essential \
+            libssl-dev \
+            libncurses5-dev \
+            flex \
+            bison \
+            libelf-dev \
+            curl \
+            device-tree-compiler # Changed to 'device-tree-compiler' (dtc alternative) 
 
       - name: Download Clang
         run: |
@@ -39,7 +49,7 @@ jobs:
         run: |
           cd kernel
           export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-  # Set toolchain untuk cross compile ARM64
+          export CROSS_COMPILE=aarch64-linux-gnu-  # Set toolchain for ARM64 cross-compilation
           make -j$(nproc) O=out CC=clang \
             LLVM=1 \
             LLVM_IAS=1 \
@@ -56,4 +66,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Image.gz-dtb
-          path: kernel/out/arch/arm64/boot/Image.gz-dtb  # Path yang benar untuk artefak
+          path: kernel/out/arch/arm64/boot/Image.gz-dtb
