@@ -5,14 +5,14 @@ on:
 
 jobs:
   build:
-    name: Build Kernel (ramabondanp)
+    name: Build Kernel (adito)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
-          repository: piwkidd/kernel_xiaomi_rosemary
+          repository: piwkiddd/kernel_xiaomi_rosemary
           path: kernel
           fetch-depth: 1
 
