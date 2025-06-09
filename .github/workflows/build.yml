@@ -1,11 +1,11 @@
-name: Build Kernel Rosemary (adito)
+name: Build Kernel Rosemary (Clang)
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Kernel (adito)
+    name: Build Kernel
     runs-on: ubuntu-latest
 
     steps:
@@ -16,14 +16,14 @@ jobs:
           path: kernel
           fetch-depth: 1
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             bc \
             build-essential \
             libssl-dev \
-            libncurses5-dev \
+            libncurses-dev \
             flex \
             bison \
             libelf-dev \
@@ -31,26 +31,33 @@ jobs:
             device-tree-compiler \
             clang \
             llvm \
-            lld
+            lld \
+            gcc-aarch64-linux-gnu
 
       - name: Set Kernel Config
         run: |
           cd kernel
           export ARCH=arm64
-          export   CROSS_COMPILE=aarch64-linux-gnu-
           make O=out rosemary_defconfig
 
-      - name: Build Kernel
+      - name: Build Kernel with Clang
         run: |
           cd kernel
           export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
+          export SUBARCH=arm64
           export PATH=/usr/lib/llvm-18/bin:$PATH
-          make -j$(nproc) O=out CC=clang \
-            out/arch/arm64/boot/Image.gz-dtb
+          make -j$(nproc) O=out \
+            CC=clang \
+            LLVM=1 \
+            LLVM_IAS=1 \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            STRIP=llvm-strip
 
-      - name: Upload Artifact
-        if: success()
+      - name: Upload Image.gz-dtb
         uses: actions/upload-artifact@v4
         with:
           name: Image.gz-dtb
