@@ -14,6 +14,7 @@ jobs:
       with:
         repository: piwkiddd/kernel_xiaomi_rosemary
         path: kernel
+        ref: main  # Optional: set to a specific branch or tag if needed
 
     - name: Clone aarch64 Toolchain
       uses: actions/checkout@v3
@@ -50,10 +51,9 @@ jobs:
 
         cd kernel
 
-        # Ganti rosemary_defconfig jika perlu
+        # Replace with actual defconfig if different
         make O=out rosemary_defconfig
 
-        # Kompilasi kernel
         make -j$(nproc) O=out \
           CC=clang \
           CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -63,5 +63,5 @@ jobs:
     - name: Upload Kernel Image
       uses: actions/upload-artifact@v3
       with:
-        name: Image.gz-dtb
+        name: Image.gz-dtb-${{ github.ref_name }}
         path: kernel/out/arch/arm64/boot/Image.gz-dtb
