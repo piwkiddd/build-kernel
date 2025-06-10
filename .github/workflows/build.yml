@@ -1,76 +1,34 @@
-name: Build Kernel Rosemary (Clang)
+name: Build Kernel for rosemary
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build Kernel
+    name: Kernel Compilation
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout kernel source
-        uses: actions/checkout@v4
-        with:
-          repository: piwkiddd/kernel_xiaomi_rosemary
-          path: kernel
-          fetch-depth: 1
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v3
+      with:
+        repository: piwkiddd/kernel_xiaomi_rosemary
+        path: kernel
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            bc \
-            build-essential \
-            libssl-dev \
-            libncurses-dev \
-            flex \
-            bison \
-            libelf-dev \
-            curl \
-            device-tree-compiler \
-            git \
-            python3 \
-            python3-pip \
-            unzip \
-            wget \
-            ccache \
-            clang-13 \
-            clang \
-            lld \
-            llvm \
-            gcc-aarch64-linux-gnu \
-            gcc-arm-linux-gnueabi
+    - name: Clone aarch64 Toolchain
+      uses: actions/checkout@v3
+      with:
+        repository: LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9
+        path: aarch64
 
-      - name: Set Kernel Config
-        run: |
-          cd kernel
-          export ARCH=arm64
-          export SUBARCH=arm64
-          make O=out rosemary_defconfig
+    - name: Clone arm Toolchain
+      uses: actions/checkout@v3
+      with:
+        repository: LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9
+        path: arm
 
-      - name: Build Kernel with Clang
-        run: |
-          cd kernel
-          export ARCH=arm64
-          export SUBARCH=arm64
-          export KBUILD_BUILD_HOST=github
-          export KBUILD_BUILD_USER=piwkiddd
-          export PATH=/usr/lib/llvm-13/bin:$PATH  # Menambahkan clang-13 ke PATH
-
-          make -j$(nproc) O=out \
-            CC=clang-13 \  # Pastikan menggunakan clang-13
-            LD=ld.lld \
-            NM=llvm-nm \
-            AR=llvm-ar \
-            OBJCOPY=llvm-objcopy \
-            OBJDUMP=llvm-objdump \
-            STRIP=llvm-strip \
-            LLVM=1 \
-            LLVM_IAS=1
-
-      - name: Upload Image.gz-dtb
-        uses: actions/upload-artifact@v4
-        with:
-          name: Image.gz-dtb
-          path: kernel/out/arch/arm64/boot/Image.gz-dtb
+    - name: Clone Clang Toolchain
+      uses: actions/checkout@v3
+      with:
+        repository: LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b
+        path: clang
