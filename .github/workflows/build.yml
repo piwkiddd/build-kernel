@@ -14,19 +14,12 @@ jobs:
       with:
         repository: piwkiddd/kernel_xiaomi_rosemary
         path: kernel
-        ref: R  # Ganti dengan nama branch/tag sesuai repo-mu jika perlu
+        ref: R  # Ganti dengan branch atau tag yang sesuai
 
-    - name: Clone arm64 Toolchain (aarch64)
-      uses: actions/checkout@v4
-      with:
-        repository: akirasan/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9
-        path: aarch64
-
-    - name: Clone arm Toolchain (32-bit)
-      uses: actions/checkout@v4
-      with:
-        repository: akirasan/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9
-        path: arm
+    - name: Clone GCC Toolchains (aarch64 & arm)
+      run: |
+        git clone --depth=1 https://github.com/arter97/aarch64-linux-android-4.9.git aarch64
+        git clone --depth=1 https://github.com/arter97/arm-linux-androideabi-4.9.git arm
 
     - name: Clone Clang Toolchain (r487747c)
       uses: actions/checkout@v4
@@ -51,7 +44,7 @@ jobs:
 
         cd kernel
 
-        # Ganti dengan defconfig lain jika perlu
+        # Ganti dengan defconfig lain jika diperlukan
         make O=out rosemary_defconfig
 
         make -j$(nproc) O=out \
