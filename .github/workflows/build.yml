@@ -32,3 +32,36 @@ jobs:
       with:
         repository: LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b
         path: clang
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison flex libssl-dev make libc6-dev \
+        libncurses5-dev libncursesw5-dev xz-utils curl lzop git gcc g++
+
+    - name: Compile Kernel
+      run: |
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export CLANG_PATH=$GITHUB_WORKSPACE/clang/bin
+        export CROSS_COMPILE=$GITHUB_WORKSPACE/aarch64/bin/aarch64-linux-android-
+        export CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/arm/bin/arm-linux-androideabi-
+        export PATH=$CLANG_PATH:$PATH
+
+        cd kernel
+
+        # Ganti rosemary_defconfig jika perlu
+        make O=out rosemary_defconfig
+
+        # Kompilasi kernel
+        make -j$(nproc) O=out \
+          CC=clang \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=aarch64-linux-android- \
+          CROSS_COMPILE_ARM32=arm-linux-androideabi-
+
+    - name: Upload Kernel Image
+      uses: actions/upload-artifact@v3
+      with:
+        name: Image.gz-dtb
+        path: kernel/out/arch/arm64/boot/Image.gz-dtb
